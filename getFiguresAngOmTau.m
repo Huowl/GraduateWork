@@ -4,7 +4,7 @@
 clc; 
 close all;
 robotParameters
-load optimizedData_01Mar22_1220
+load PD_optimizedData_09Mar22_2112
 mdlName = 'QR_Unitree';
 fem_motionFront = femur_motionFront;
 tib_motionFront = tibia_motionFront;
@@ -12,20 +12,20 @@ fem_motionRear = femur_motionRear;
 tib_motionRear = tibia_motionRear;
 %% Simulate
 [q,fem_der_front,tib_der_front] = createSmoothTrajectory( ... 
-    fem_motionFront,tib_motionFront,gait_period,[0 delta_gait_front]);
+    fem_motionFront,tib_motionFront,gait_period,[0 delta_gait_front*gait_period/100]);
 
 init_angs_F_front = [-q(1,1) -q(2,1)]; % first turn
 init_angs_S_front = [-q(1,2) -q(2,2)]; % second turn
 
 
 [q,fem_der_rear,tib_der_rear] = createSmoothTrajectory(... 
-    fem_motionRear,tib_motionRear,gait_period,[0 delta_gait_rear]);
+    fem_motionRear,tib_motionRear,gait_period,[0 delta_gait_rear*gait_period/100]);
 
 init_angs_F_rear = [-q(1,1) -q(2,1)]; % first turn
 init_angs_S_rear = [-q(1,2) -q(2,2)]; % second turn
 
 tic; simout_torque = sim(mdlName,'StopTime','10');
-disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds']);
+disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds ode23t']);
 %% Torso Position Plots
 figure(1)
 subplot(2,1,1)

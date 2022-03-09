@@ -48,9 +48,12 @@ sp_rad = 0.02;
 pl_x = ground(1);
 pl_y = ground(2);
 pdepth = 0.03;
-cntstiff = 1e6;
-cntdmp = 1e3;
 
+cntstiff = 1e5;
+cntdmp = 1e5;
+
+staticFriction = 1;
+dynamicFriction = 0.9;
 %%
 world_damping = 20;     % Translational damping
 world_rot_damping = 10; % Rotational damping
@@ -58,14 +61,14 @@ tsTraj = 0.01;
 
 %% Control legs
 
-k_p_fem = 55;
+k_p_fem = 80;
 k_i_fem = 350;
-k_d_fem = 0.6;
+k_d_fem = 1;
 
-k_p_tib = 55;
+k_p_tib = 80;
 k_i_tib = 275;
-k_d_tib = 0.6;
+k_d_tib = 1;
 
-max_torque = 80;
+max_torque = 100;
 
 gait_period = 1;
