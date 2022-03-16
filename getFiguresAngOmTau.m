@@ -4,7 +4,7 @@
 clc; 
 close all;
 robotParameters
-load PD_optimizedData_09Mar22_2112
+load PD_optimizedData_16Mar22_1632
 mdlName = 'QR_Unitree';
 fem_motionFront = femur_motionFront;
 tib_motionFront = tibia_motionFront;
@@ -27,24 +27,37 @@ init_angs_S_rear = [-q(1,2) -q(2,2)]; % second turn
 tic; simout_torque = sim(mdlName,'StopTime','10');
 disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds ode23t']);
 %% Torso Position Plots
+size_arr_vel = numel(get(simout_torque.yout,'measBody').Values.vX.Data);
+mean_vel = sum(get(simout_torque.yout,'measBody').Values.vX.Data)/numel(get(simout_torque.yout,'measBody').Values.vX.Data);
+arr_mean_vel = zeros(1,size_arr_vel);
+arr_mean_vel = repmat(mean_vel,[1 size_arr_vel]);
 figure(1)
-subplot(2,1,1)
+subplot(3,1,1)
 hold on
 grid on
-plot(get(simout_torque.yout,'measBody').Values.X.Time,get(simout_torque.yout,'measBody').Values.X.Data,'r-');
+plot(get(simout_torque.yout,'measBody').Values.x.Time,get(simout_torque.yout,'measBody').Values.x.Data,'r-');
 title('Robot Motion')
 % legend('Torque Ctrl');
 title('Simulation Output Comparisons');
 xlabel('Time [s]');
-ylabel('Torso X Position [m]');
-subplot(2,1,2)
+ylabel('X Position [m]');
+subplot(3,1,2)
 hold on
 grid on
-plot(get(simout_torque.yout,'measBody').Values.Z.Time,get(simout_torque.yout,'measBody').Values.Z.Data,'r-');
+plot(get(simout_torque.yout,'measBody').Values.z.Time,get(simout_torque.yout,'measBody').Values.z.Data,'r-');
+title('Robot Motion')
+% legend('Torque Ctrl')
+xlabel('Time [s]');
+ylabel('Z Position [m]');
+subplot(3,1,3)
+hold on
+grid on
+plot(get(simout_torque.yout,'measBody').Values.vX.Time,get(simout_torque.yout,'measBody').Values.vX.Data,'r-');
+plot(get(simout_torque.yout,'measBody').Values.vX.Time,arr_mean_vel,'g-.');
 title('Robot Motion')
 % legend('Torque Ctrl');
 xlabel('Time [s]');
-ylabel('Torso Z Position [m]');
+ylabel('X Velocity [m/s]');
 
 %% Joint Plots
 jointNames = {'Rfront','Rrear','Lfront','Lrear'};

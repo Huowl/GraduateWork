@@ -16,7 +16,7 @@ if parallelFlag
     Simulink.sdi.enablePCTSupport('local');
     
     % Add paths and dependent files to run simulations in parallel
-    rootDir = fullfile(fileparts(mfilename('fullpath')),'\');
+    rootDir = fullfile(fileparts(mfilename('fullpath')),'');
     addAttachedFiles(p,rootDir);
     parfevalOnAll(@addpath,0,rootDir);
     parfevalOnAll(@load_system,0,mdlName);

@@ -1,4 +1,4 @@
-function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period)
+function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period, v_x_des)
 % Cost function for robot quadruped optimization
 % Ivan Borisov
 % ITMO University
@@ -23,7 +23,7 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
     delays = params(end-1:end);
     traj_times = linspace(0,gait_period,N+1);
 
-        
+%% Create trajectory        
     % Evaluate the trajectory at the start and halfway points for right and
     % left legs, respectively, to get initial conditions and trajectory
     % waypoint derivatives
@@ -41,36 +41,76 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 
     delta_gait_front = delays(1);
     delta_gait_rear = delays(2);
-    % Simulate the model
+
+%% Simulate the model
+
     simout = sim(mdlName,'StopTime','10','SrcWorkspace','current','FastRestart','on');          
 
-    % Unpack logged data
-%     measBody = get(simout.simout,'measBody').Values;
+%% Unpack logged data
     measBody = get(simout.yout,'measBody').Values;
-    yMax = max(abs(measBody.X.Data));
-    xEnd = measBody.X.Data(end);
+    yMax = max(abs(measBody.y.Data));
+    xEnd = measBody.x.Data(end);
     tEnd = simout.tout(end);
 
-    % Calculate penalty from logged data
+    % Velocity data
+%     vel_x = measBody.vX.Data;
+%     v_target = repmat(v_x_des,[numel(vel_x) 1]);
+
+%     vel_z = measBody.vZ.Data;
+%     omg_y = measBody.wY.Data;
+
+%% Energy data
+%     measLegs = get(simout.yout,'measLegs').Values;
+%     PRfr = abs(measLegs.Rfront.OmegaT.Data'*measLegs.Rfront.TorqueT.Data) +...
+%         abs(measLegs.Rfront.OmegaF.Data'*measLegs.Rfront.TorqueF.Data);
+%     PRr = abs(measLegs.Rrear.OmegaT.Data'*measLegs.Rrear.TorqueT.Data) +...
+%         abs(measLegs.Rrear.OmegaF.Data'*measLegs.Rrear.TorqueF.Data);
+%     PLfr = abs(measLegs.Lfront.OmegaT.Data'*measLegs.Lfront.TorqueT.Data) +...
+%         abs(measLegs.Lfront.OmegaF.Data'*measLegs.Lfront.TorqueF.Data);
+%     PLr = abs(measLegs.Lrear.OmegaT.Data'*measLegs.Lrear.TorqueT.Data) +...
+%         abs(measLegs.Lrear.OmegaF.Data'*measLegs.Lrear.TorqueF.Data);
+%     Power = [PRfr PRr PLfr PLr];
+%     Energy = trapz(Power(1),time) + trapz(Power(2),time) + trapz(Power(3),time) + trapz(Power(4),time);
+
+%% OptFunction = Reward for RL from article
+%     alp_1 = 0.04;
+%     alp_2 = 20;
+
+%     r_alive = 20 * v_target;
+% 
+%     r_energy = - (Power(1) + Power(2) + Power(3) + Power(4));
+
+%     r_forward = -alp_2*abs(v_x_des-v_target) - vel_z.^2 - omg_y.^2;
+
+%% First OptFunction = Optimize Travel     
+%     Calculate penalty from logged data
     
-    %   Longitudinal (Y) distance traveled without falling 
-    %   (ending simulation early) increases reward
-    positiveReward = sign(xEnd)*xEnd^2 * tEnd;
+%       Longitudinal (Y) distance traveled without falling 
+%       (ending simulation early) increases reward
+
+positiveReward = sign(xEnd)*xEnd^2 * tEnd;
     
-    %   Lateral (Y) displacement and trajectory aggressiveness 
-    %   (number of times the derivative flips signs) decreases reward
-    %   NOTE: Set lower limits to prevent divisions by zero
-    aggressiveness = 0;
-    diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
-    for idx = 1:numel(diffs)-1
-        if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N) 
-             aggressiveness = aggressiveness + 1;            
-        end
+%   Lateral (Y) displacement and trajectory aggressiveness 
+%   (number of times the derivative flips signs) decreases reward
+%   NOTE: Set lower limits to prevent divisions by zero
+
+aggressiveness = 0;
+diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
+for idx = 1:numel(diffs)-1
+    if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N) 
+         aggressiveness = aggressiveness + 1;            
     end
-    negativeReward = max(yMax,0.1) * max(aggressiveness,1);
-    
-    %   Negative sign needed since the optimization minimizes cost function     
-    penalty = -positiveReward/negativeReward;        
-    
 end
+ negativeReward = 0.1*max(yMax,0.1) * max(aggressiveness,1);% + sqrt((vel_x - v_target)'*(vel_x - v_target));
+
+%       Negative sign needed since the optimization minimizes cost function
+penalty = -positiveReward/negativeReward;
+
+%% Maybe
+% if (xEnd > 0.5)
+%     penalty = sqrt((vel_x - v_target)'*(vel_x - v_target))/tEnd;
+% else
+%     penalty = 30;
+% end
+% end
 

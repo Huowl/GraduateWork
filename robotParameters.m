@@ -62,13 +62,13 @@ tsTraj = 0.01;
 %% Control legs
 
 k_p_fem = 80;
-k_i_fem = 350;
 k_d_fem = 1;
 
+k_i_fem = 350;
+
 k_p_tib = 80;
-k_i_tib = 275;
 k_d_tib = 1;
 
-max_torque = 100;
+k_i_tib = 275;
 
-gait_period = 1;
+max_torque = 100;
