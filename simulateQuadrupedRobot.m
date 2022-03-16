@@ -49,12 +49,14 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %% Unpack logged data
     measBody = get(simout.yout,'measBody').Values;
     yMax = max(abs(measBody.y.Data));
+    zData = measBody.z.Data;
     xEnd = measBody.x.Data(end);
-    tEnd = simout.tout(end);
+    tEnd = simout.tout(end);  
 
     % Velocity data
-%     vel_x = measBody.vX.Data;
-%     v_target = repmat(v_x_des,[numel(vel_x) 1]);
+     vel_x = measBody.vX.Data;
+     v_target = repmat(v_x_des,[numel(vel_x) 1]);
+     time = simout.tout;
 
 %     vel_z = measBody.vZ.Data;
 %     omg_y = measBody.wY.Data;
@@ -83,10 +85,10 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %     r_forward = -alp_2*abs(v_x_des-v_target) - vel_z.^2 - omg_y.^2;
 
 %% First OptFunction = Optimize Travel     
-%     Calculate penalty from logged data
-    
-%       Longitudinal (Y) distance traveled without falling 
-%       (ending simulation early) increases reward
+%   Calculate penalty from logged data
+
+%   Longitudinal (X) distance traveled without falling 
+%   (ending simulation early) increases reward
 
 positiveReward = sign(xEnd)*xEnd^2 * tEnd;
     
@@ -101,16 +103,20 @@ for idx = 1:numel(diffs)-1
          aggressiveness = aggressiveness + 1;            
     end
 end
- negativeReward = 0.1*max(yMax,0.1) * max(aggressiveness,1);% + sqrt((vel_x - v_target)'*(vel_x - v_target));
+%  negativeReward = max(yMax,0.1) * max(aggressiveness,1)+ 1e-3*sum(abs(vel_x.*time - v_x_des*time));
+ negativeReward = max(yMax,0.1) * max(aggressiveness,1)+ 1.3e-3*sum(abs(vel_x.*time - v_x_des*time));
 
-%       Negative sign needed since the optimization minimizes cost function
+ 
+
+%   Negative sign needed since the optimization minimizes cost function
+
 penalty = -positiveReward/negativeReward;
-
+ 
 %% Maybe
 % if (xEnd > 0.5)
 %     penalty = sqrt((vel_x - v_target)'*(vel_x - v_target))/tEnd;
 % else
 %     penalty = 30;
 % end
-% end
+end
 
