@@ -50,13 +50,14 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
     measBody = get(simout.yout,'measBody').Values;
     yMax = max(abs(measBody.y.Data));
     zData = measBody.z.Data;
+    xData = measBody.x.Data;
     xEnd = measBody.x.Data(end);
     tEnd = simout.tout(end);  
 
     % Velocity data
      vel_x = measBody.vX.Data;
      v_target = repmat(v_x_des,[numel(vel_x) 1]);
-     time = simout.tout;
+     timeData = simout.tout;
 
 %     vel_z = measBody.vZ.Data;
 %     omg_y = measBody.wY.Data;
@@ -90,33 +91,34 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %   Longitudinal (X) distance traveled without falling 
 %   (ending simulation early) increases reward
 
-positiveReward = sign(xEnd)*xEnd^2 * tEnd;
+% positiveReward = sign(xEnd)*xEnd^2 * tEnd;
     
 %   Lateral (Y) displacement and trajectory aggressiveness 
 %   (number of times the derivative flips signs) decreases reward
 %   NOTE: Set lower limits to prevent divisions by zero
 
-aggressiveness = 0;
-diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
-for idx = 1:numel(diffs)-1
-    if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N) 
-         aggressiveness = aggressiveness + 1;            
-    end
-end
+% aggressiveness = 0;
+% diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
+% for idx = 1:numel(diffs)-1
+%     if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N) 
+%          aggressiveness = aggressiveness + 1;            
+%     end
+% end
 %  negativeReward = max(yMax,0.1) * max(aggressiveness,1)+ 1e-3*sum(abs(vel_x.*time - v_x_des*time));
- negativeReward = max(yMax,0.1) * max(aggressiveness,1)+ 1.3e-3*sum(abs(vel_x.*time - v_x_des*time));
-
+%  negativeReward = max(yMax,0.1) * max(aggressiveness,1)+ 1e-2*sum(abs(zData - 0.3));
+%  negativeReward = max(yMax,0.1) * max(aggressiveness,1);
  
 
 %   Negative sign needed since the optimization minimizes cost function
 
-penalty = -positiveReward/negativeReward;
+% penalty = -positiveReward/negativeReward;
  
 %% Maybe
-% if (xEnd > 0.5)
-%     penalty = sqrt((vel_x - v_target)'*(vel_x - v_target))/tEnd;
-% else
-%     penalty = 30;
-% end
+% penalty = sqrt((vel_x - v_target)'*(vel_x - v_target)) + 3*(xEnd -
+% 10*v_x_des)^2/tEnd; %1
+
+ penalty = (xEnd - 10*v_x_des)^2/tEnd*max(yMax,0.1); %2 find walk and trot with few error
+%  penalty = sqrt(sum(xData - v_x_des*timeData).^2)/tEnd*max(yMax,0.1); %2
+
 end
 

@@ -4,7 +4,7 @@
 clc; 
 close all;
 robotParameters
-load PD_optimizedData_16Mar22_2228
+load PD_optimizedData_19Mar22_1625_troting
 mdlName = 'QR_Unitree';
 fem_motionFront = femur_motionFront;
 tib_motionFront = tibia_motionFront;
