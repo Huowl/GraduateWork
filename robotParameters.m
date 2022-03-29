@@ -21,12 +21,16 @@ body_mass = 6.0; % [kg]
 femur_length = 0.2; % [m]
 femur_width = 0.0245;
 femur_height = 0.034;
-femur_mass = 0.888;
+femur_mass = 0.888; %[kg]
+
+femParam = [femur_length femur_width femur_height femur_mass];
 
 tibia_length = 0.2; % [m]
 tibia_width = 0.016;
 tibia_height = 0.016;
-tibia_mass = 0.151;
+tibia_mass = 0.151; %[kg]
+
+tibParam = [tibia_length tibia_width tibia_height tibia_mass];
 
 hip_radius = 0.046;
 hip_length = 0.04;
@@ -43,6 +47,31 @@ offset_LF = [leg_offset_x, leg_offset_y, body_dim(3)/2];
 
 offset_RR = [-leg_offset_x, -leg_offset_y, body_dim(3)/2];
 offset_LR = [-leg_offset_x, leg_offset_y, body_dim(3)/2];
+
+%% Motor Parameters Unitree A1 20 march 2022
+
+PWM_freq = 4000; % [Hz]
+max_torque = 33.5; % [V] Scaling PWM 100
+m_voltage = 36; % [V] Output PWM
+
+arm_resistance = 4.1730; %[Ohm]
+arm_inductance = 250e-6; % [H]
+torque_c = 0.8372; %[N*m/A]
+
+rotor_inertia = 72e-6;
+rotor_damping = 0.09;
+
+g_ratio = 1.5;%10.3;
+
+
+%% Spine parameters
+
+spine_eq_pos = 0; %[rad] equlibrium position spine
+spine_stiffness = 300; % [Hm/rad] spine joing spring stifness
+spine_damping = 10; %  [Hm/(rad/s)] spine joint damphing coefficient
+% Bounds [rad]
+spine_pos_low_limit = -pi/2;
+spine_pos_up_limit = pi/2;
 %% Contact
 sp_rad = 0.02;
 pl_x = ground(1);
@@ -57,18 +86,4 @@ dynamicFriction = 0.9;
 %%
 world_damping = 20;     % Translational damping
 world_rot_damping = 10; % Rotational damping
-tsTraj = 0.01;      
-
-%% Control legs
-
-k_p_fem = 80;
-k_d_fem = 1;
-
-k_i_fem = 350;
-
-k_p_tib = 80;
-k_d_tib = 1;
-
-k_i_tib = 275;
-
-max_torque = 100;
+tsTraj = 0.01;

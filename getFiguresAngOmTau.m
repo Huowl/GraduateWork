@@ -3,9 +3,19 @@
 %% Setup
 clc; 
 close all;
-robotParameters
+robotParameters;
+mdlName = 'QR_Unitree_with_spine';
+
+addpath(genpath('ResultOptimizeTrajectory'));
 load PD_optimizedData_19Mar22_1625_troting
-mdlName = 'QR_Unitree';
+
+if exist('save_actType',"var") == 0
+    actuatorType = 2;
+else
+    actuatorType = save_actType;
+end
+choice_ctrl_legs;
+
 fem_motionFront = femur_motionFront;
 tib_motionFront = tibia_motionFront;
 fem_motionRear = femur_motionRear;
@@ -25,7 +35,7 @@ init_angs_F_rear = [-q(1,1) -q(2,1)]; % first turn
 init_angs_S_rear = [-q(1,2) -q(2,2)]; % second turn
 
 tic; simout_torque = sim(mdlName,'StopTime','10');
-disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds ode23t']);
+disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds ode23s']);
 %% Torso Position Plots
 mean_z_pos = sum(get(simout_torque.yout,'measBody').Values.z.Data)/numel(get(simout_torque.yout,'measBody').Values.z.Data);
 size_arr_vel = numel(get(simout_torque.yout,'measBody').Values.vX.Data);

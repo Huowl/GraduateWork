@@ -1,8 +1,9 @@
-function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period, v_x_des)
+function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period, v_x_des, actType)
 % Cost function for robot quadruped optimization
 % Ivan Borisov
 % ITMO University
-
+    actuatorType = actType;
+    choice_ctrl_legs;
     % Load parameters into function workspace
     robotParameters;
     % Trajectory sample time
@@ -61,7 +62,28 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 
 %     vel_z = measBody.vZ.Data;
 %     omg_y = measBody.wY.Data;
+%% Energy data 28.03.22
 
+measPow = get(simout.yout,'PowLegs').Values;
+%     P_front_right = abs(measPow.PwRfront.VoltageFemur.Data'*measPow.PwRfront.CurrentFemur.Data) ...
+%         + abs(measPow.PwRfront.VoltageTibia.Data'*measPow.PwRfront.CurrentTibia.Data);
+%     P_front_left = abs(measPow.PwLfront.VoltageFemur.Data'*measPow.PwLfront.CurrentFemur.Data) ...
+%         + abs(measPow.PwLfront.VoltageTibia.Data'*measPow.PwLfront.CurrentTibia.Data);
+%     P_rear_right = abs(measPow.PwRrear.VoltageFemur.Data'*measPow.PwRrear.CurrentFemur.Data) ... 
+%         + abs(measPow.PwRrear.VoltageTibia.Data'* measPow.PwRrear.CurrentTibia.Data);
+%     P_rear_left = abs(measPow.PwLrear.VoltageFemur.Data'*measPow.PwLrear.CurrentFemur.Data) ... 
+%         + abs(measPow.PwLrear.VoltageTibia.Data'*measPow.PwLrear.CurrentTibia.Data);
+
+    P_front_right = abs(measPow.PwRfront.VoltageFemur.Data.*measPow.PwRfront.CurrentFemur.Data) ...
+        + abs(measPow.PwRfront.VoltageTibia.Data.*measPow.PwRfront.CurrentTibia.Data);
+    P_front_left = abs(measPow.PwLfront.VoltageFemur.Data.*measPow.PwLfront.CurrentFemur.Data) ...
+        + abs(measPow.PwLfront.VoltageTibia.Data.*measPow.PwLfront.CurrentTibia.Data);
+    P_rear_right = abs(measPow.PwRrear.VoltageFemur.Data.*measPow.PwRrear.CurrentFemur.Data) ... 
+        + abs(measPow.PwRrear.VoltageTibia.Data.* measPow.PwRrear.CurrentTibia.Data);
+    P_rear_left = abs(measPow.PwLrear.VoltageFemur.Data.*measPow.PwLrear.CurrentFemur.Data) ... 
+        + abs(measPow.PwLrear.VoltageTibia.Data.*measPow.PwLrear.CurrentTibia.Data);
+    Energy = trapz(timeData,P_front_left) + trapz(timeData,P_front_right)...
+        + trapz(timeData,P_rear_left) + trapz(timeData,P_rear_right); 
 %% Energy data
 %     measLegs = get(simout.yout,'measLegs').Values;
 %     PRfr = abs(measLegs.Rfront.OmegaT.Data'*measLegs.Rfront.TorqueT.Data) +...
@@ -117,7 +139,7 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 % penalty = sqrt((vel_x - v_target)'*(vel_x - v_target)) + 3*(xEnd -
 % 10*v_x_des)^2/tEnd; %1
 
- penalty = (xEnd - 10*v_x_des)^2/tEnd*max(yMax,0.1); %2 find walk and trot with few error
+ penalty = (xEnd - 10*v_x_des)^2/tEnd*max(yMax,0.1)*Energy; %2 find walk and trot with few error
 %  penalty = sqrt(sum(xData - v_x_des*timeData).^2)/tEnd*max(yMax,0.1); %2
 
 end
