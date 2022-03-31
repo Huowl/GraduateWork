@@ -1,9 +1,12 @@
-function penalty = CostFuncOptimizeSpine(params,path,mdlName)
+function penalty = CostFuncOptimizeSpine(params,scaleFactor,path,mdlName)
+
 % Function for energy optimize spine's quadruped
 % Yefim Osipov
 % ITMO University
+
 %% Init and simulate
     robotParameters;
+     params = scaleFactor*params;
     full_path = ['ResultOptimizeTrajectory/' path];
     load(full_path);
 
@@ -37,6 +40,15 @@ function penalty = CostFuncOptimizeSpine(params,path,mdlName)
     spine_damping = params(3);
 
     simout = sim(mdlName,'StopTime','10','SrcWorkspace','current','FastRestart','on'); 
+    %% Get data
+
+    timeData = simout.tout;
+    measBody = get(simout.yout,'measBody').Values;
+    yMax = max(abs(measBody.y.Data));
+    zData = measBody.z.Data;
+    xData = measBody.x.Data;
+    xEnd = measBody.x.Data(end);
+    tEnd = simout.tout(end);  
 
     %% Energy data
     measLegs = get(simout.yout,'measLegs').Values;
@@ -50,7 +62,8 @@ function penalty = CostFuncOptimizeSpine(params,path,mdlName)
         PLr = abs(measLegs.Lrear.OmegaT.Data'*measLegs.Lrear.TorqueT.Data) +...
             abs(measLegs.Lrear.OmegaF.Data'*measLegs.Lrear.TorqueF.Data);
         Power = [PRfr PRr PLfr PLr];
-        Energy = trapz(Power(1),time) + trapz(Power(2),time) + trapz(Power(3),time) + trapz(Power(4),time);
+        Energy = sum(Power);
+        %         Energy = trapz(timeData,Power(1)) + trapz(timeData,Power(2)) + trapz(timeData,Power(3)) + trapz(timeData,Power(4));
     elseif actuatorType == 1 % If Motor
         measPow = get(simout.yout,'PowLegs').Values;
         P_front_right = abs(measPow.PwRfront.VoltageFemur.Data.*measPow.PwRfront.CurrentFemur.Data) ...
@@ -67,5 +80,15 @@ function penalty = CostFuncOptimizeSpine(params,path,mdlName)
 
     %% Penalty function
 
-    penalty = Energy; %Change later
+    positiveReward = sign(xEnd)*xEnd^2 * tEnd;
+    aggressiveness = 0;
+    diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
+    for idx = 1:numel(diffs)-1
+        if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,6) 
+             aggressiveness = aggressiveness + 1;            
+        end
+    end
+ negativeReward = max(yMax,0.1) * max(aggressiveness,1) * Energy;
+
+    penalty = -positiveReward/negativeReward; %Change later
 end
