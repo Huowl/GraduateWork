@@ -25,15 +25,15 @@ function penalty = CostFuncOptimizeSpine(params,scaleFactor,path,mdlName)
     [q,fem_der_front,tib_der_front] = createSmoothTrajectory( ... 
         fem_motionFront,tib_motionFront,gait_period,[0 delta_gait_front*gait_period/100]);
     
-    init_angs_F_front = [-q(1,1) -q(2,1)]; % first turn
-    init_angs_S_front = [-q(1,2) -q(2,2)]; % second turn
+    init_angs_F_front = [q(1,1) q(2,1)]; % first turn
+    init_angs_S_front = [q(1,2) q(2,2)]; % second turn
     
     
     [q,fem_der_rear,tib_der_rear] = createSmoothTrajectory(... 
         fem_motionRear,tib_motionRear,gait_period,[0 delta_gait_rear*gait_period/100]);
     
-    init_angs_F_rear = [-q(1,1) -q(2,1)]; % first turn
-    init_angs_S_rear = [-q(1,2) -q(2,2)]; % second turn
+    init_angs_F_rear = [q(1,1) q(2,1)]; % first turn
+    init_angs_S_rear = [q(1,2) q(2,2)]; % second turn
 
     spine_eq_pos = params(1);
     spine_stiffness = params(2);
@@ -90,5 +90,5 @@ function penalty = CostFuncOptimizeSpine(params,scaleFactor,path,mdlName)
     end
  negativeReward = max(yMax,0.1) * max(aggressiveness,1) * Energy;
 
-    penalty = -positiveReward/negativeReward; %Change later
+ penalty = -positiveReward/negativeReward; %Change later
 end

@@ -78,8 +78,8 @@ pl_x = ground(1);
 pl_y = ground(2);
 pdepth = 0.03;
 
-cntstiff = 1e5;
-cntdmp = 1e5;
+cntstiff = 5e3; %1e5 past 03.04
+cntdmp = 1e2; % 1e5
 
 staticFriction = 1;
 dynamicFriction = 0.9;

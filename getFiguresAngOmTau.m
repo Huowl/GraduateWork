@@ -4,10 +4,10 @@
 clc; 
 close all;
 robotParameters;
-mdlName = 'QR_Unitree_with_spine';
+mdlName = 'QR_Unitree';
 
 addpath(genpath('ResultOptimizeTrajectory'));
-load PD_optimizedData_19Mar22_1625_troting
+load num_9_PD_ctrl_optimizedData_trot_04Apr22_1411
 
 if exist('save_actType',"var") == 0
     actuatorType = 2;
@@ -24,29 +24,34 @@ tib_motionRear = tibia_motionRear;
 [q,fem_der_front,tib_der_front] = createSmoothTrajectory( ... 
     fem_motionFront,tib_motionFront,gait_period,[0 delta_gait_front*gait_period/100]);
 
-init_angs_F_front = [-q(1,1) -q(2,1)]; % first turn
-init_angs_S_front = [-q(1,2) -q(2,2)]; % second turn
+init_angs_F_front = [q(1,1) q(2,1)]; % first turn
+init_angs_S_front = [q(1,2) q(2,2)]; % second turn
 
 
 [q,fem_der_rear,tib_der_rear] = createSmoothTrajectory(... 
     fem_motionRear,tib_motionRear,gait_period,[0 delta_gait_rear*gait_period/100]);
 
-init_angs_F_rear = [-q(1,1) -q(2,1)]; % first turn
-init_angs_S_rear = [-q(1,2) -q(2,2)]; % second turn
+init_angs_F_rear = [q(1,1) q(2,1)]; % first turn
+init_angs_S_rear = [q(1,2) q(2,2)]; % second turn
 
 tic; simout_torque = sim(mdlName,'StopTime','10');
 disp(['Compiled and ran Torque actuated simulation in ' num2str(toc) ' seconds ode23s']);
 %% Torso Position Plots
-mean_z_pos = sum(get(simout_torque.yout,'measBody').Values.z.Data)/numel(get(simout_torque.yout,'measBody').Values.z.Data);
-size_arr_vel = numel(get(simout_torque.yout,'measBody').Values.vX.Data);
-mean_vel = sum(get(simout_torque.yout,'measBody').Values.vX.Data)/numel(get(simout_torque.yout,'measBody').Values.vX.Data);
-arr_mean_vel = zeros(1,size_arr_vel);
+mean_z_pos = sum(simout_torque.measBody.z.Data)/numel(simout_torque.measBody.z.Data);
+
+size_arr_vel = numel(simout_torque.measBody.vX.Data);
+mean_vel = sum(simout_torque.measBody.vX.Data)/numel(simout_torque.measBody.vX.Data);
 arr_mean_vel = repmat(mean_vel,[1 size_arr_vel]);
+
+x_data = simout_torque.measBody.x.Data;
+size_x = numel(x_data);
+des_x = linspace(0,simout_torque.measBody.x.Time(end)*0.9,size_x);
+
 figure(1)
 subplot(3,1,1)
 hold on
 grid on
-plot(get(simout_torque.yout,'measBody').Values.x.Time,get(simout_torque.yout,'measBody').Values.x.Data);
+plot(simout_torque.measBody.x.Time,simout_torque.measBody.x.Data,simout_torque.measBody.x.Time,des_x);
 title('Robot Motion')
 % legend('Torque Ctrl');
 title('Simulation Output Comparisons');
@@ -55,7 +60,7 @@ ylabel('X Position [m]');
 subplot(3,1,2)
 hold on
 grid on
-plot(get(simout_torque.yout,'measBody').Values.z.Time,get(simout_torque.yout,'measBody').Values.z.Data);
+plot(simout_torque.measBody.z.Time,simout_torque.measBody.z.Data);
 title('Robot Motion')
 % legend('Torque Ctrl')
 xlabel('Time [s]');
@@ -63,8 +68,8 @@ ylabel('Z Position [m]');
 subplot(3,1,3)
 hold on
 grid on
-plot(get(simout_torque.yout,'measBody').Values.vX.Time,get(simout_torque.yout,'measBody').Values.vX.Data);
-plot(get(simout_torque.yout,'measBody').Values.vX.Time,arr_mean_vel);
+plot(simout_torque.measBody.vX.Time,simout_torque.measBody.vX.Data);
+plot(simout_torque.measBody.vX.Time,arr_mean_vel);
 title('Robot Motion')
 % legend('Torque Ctrl');
 xlabel('Time [s]');
@@ -80,7 +85,7 @@ for idx = 1:4
     subplot(3,2,1)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).AngleF.Time,get(simout_torque.yout,'measLegs').Values.(jName).AngleF.Data);
+    plot(simout_torque.measLegs.(jName).AngleF.Time,simout_torque.measLegs.(jName).AngleF.Data);
     xlabel('Time [s]');
     ylabel('Angle [rad]');
     title([jName ' angle femur'])
@@ -88,7 +93,7 @@ for idx = 1:4
     subplot(3,2,2)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).AngleT.Time,get(simout_torque.yout,'measLegs').Values.(jName).AngleT.Data);
+    plot(simout_torque.measLegs.(jName).AngleT.Time,simout_torque.measLegs.(jName).AngleT.Data);
     xlabel('Time [s]');
     ylabel('Angle [rad]');
     title([jName ' angle tibia'])
@@ -98,7 +103,7 @@ for idx = 1:4
     subplot(3,2,3)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).OmegaF.Time,get(simout_torque.yout,'measLegs').Values.(jName).OmegaF.Data);
+    plot(simout_torque.measLegs.(jName).OmegaF.Time,simout_torque.measLegs.(jName).OmegaF.Data);
     xlabel('Time [s]');
     ylabel('Speed [rad/s]');
     title([jName ' speed femur'])
@@ -106,7 +111,7 @@ for idx = 1:4
     subplot(3,2,4)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).OmegaT.Time,get(simout_torque.yout,'measLegs').Values.(jName).OmegaT.Data);
+    plot(simout_torque.measLegs.(jName).OmegaT.Time,simout_torque.measLegs.(jName).OmegaT.Data);
     xlabel('Time [s]');
     ylabel('Speed [rad/s]');
     title([jName ' speed tibia'])
@@ -116,7 +121,7 @@ for idx = 1:4
     subplot(3,2,5)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).TorqueF.Time,get(simout_torque.yout,'measLegs').Values.(jName).TorqueF.Data);
+    plot(simout_torque.measLegs.(jName).TorqueF.Time,simout_torque.measLegs.(jName).TorqueF.Data);
     xlabel('Time [s]');
     ylabel('Torque [N*m]');
     ylim(max_torque*[-1, 1])
@@ -125,7 +130,7 @@ for idx = 1:4
     subplot(3,2,6)
     hold on
     grid on
-    plot(get(simout_torque.yout,'measLegs').Values.(jName).TorqueT.Time,get(simout_torque.yout,'measLegs').Values.(jName).TorqueT.Data);
+    plot(simout_torque.measLegs.(jName).TorqueT.Time,simout_torque.measLegs.(jName).TorqueT.Data);
     xlabel('Time [s]');
     ylabel('Torque [N*m]');
     ylim(max_torque*[-1, 1])
