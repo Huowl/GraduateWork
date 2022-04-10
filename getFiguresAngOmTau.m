@@ -5,10 +5,10 @@ clc;
 close all;
 robotParameters;
 mdlName = 'QR_Unitree';
-
+typeBody = 2;
 addpath(genpath('ResultOptimizeTrajectory'));
-load num_9_PD_ctrl_optimizedData_trot_04Apr22_1411
-
+addpath(genpath('ResultTrajectoryVersion06-04'));
+load bouncing_num_11_PD_ctrl_optimizedData_06Apr22_1548
 if exist('save_actType',"var") == 0
     actuatorType = 2;
 else
@@ -45,7 +45,9 @@ arr_mean_vel = repmat(mean_vel,[1 size_arr_vel]);
 
 x_data = simout_torque.measBody.x.Data;
 size_x = numel(x_data);
-des_x = linspace(0,simout_torque.measBody.x.Time(end)*0.9,size_x);
+des_x = linspace(0,simout_torque.measBody.x.Time(end)*1.5,size_x);
+
+CoT = CostOfTransport(simout_torque,actuatorType);
 
 figure(1)
 subplot(3,1,1)

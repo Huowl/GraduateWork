@@ -3,6 +3,7 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 % Ivan Borisov
 % ITMO University
     actuatorType = actType;
+    typeBody = 1;
     choice_ctrl_legs;
     % Load parameters into function workspace
     robotParameters;
@@ -50,55 +51,18 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %% Unpack logged data
     measBody = simout.measBody;
     yMax = max(abs(measBody.y.Data));
-%     z = timeseries2timetable(measBody.z);
-%     zData = z.z;
-%     xData = timeseries2timetable(measBody.x).x;
     xEnd = timeseries2timetable(measBody.x).x(end);
-    tEnd = simout.tout(end);  
+    tEnd = simout.tout(end);
 
     % Velocity data
-     vel_x = timeseries2timetable(measBody.vX).vX;
+%      vel_x = timeseries2timetable(measBody.vX).vX;
 %      v_target = repmat(v_x_des,[numel(vel_x) 1]);
 %      timeData = z.Time;
 
 %      mean_z_pos = sum(zData)/numel(zData);
-     mean_vel = sum(vel_x)/numel(vel_x);
+%      mean_vel = sum(vel_x)/numel(vel_x);
 %     vel_z = measBody.vZ.Data;
 %     omg_y = measBody.wY.Data;
-%% Energy data 28.03.22
-
-% measPow = simout.PowLegs;
-%     P_front_right = abs(measPow.PwRfront.VoltageFemur.Data'*measPow.PwRfront.CurrentFemur.Data) ...
-%         + abs(measPow.PwRfront.VoltageTibia.Data'*measPow.PwRfront.CurrentTibia.Data);
-%     P_front_left = abs(measPow.PwLfront.VoltageFemur.Data'*measPow.PwLfront.CurrentFemur.Data) ...
-%         + abs(measPow.PwLfront.VoltageTibia.Data'*measPow.PwLfront.CurrentTibia.Data);
-%     P_rear_right = abs(measPow.PwRrear.VoltageFemur.Data'*measPow.PwRrear.CurrentFemur.Data) ... 
-%         + abs(measPow.PwRrear.VoltageTibia.Data'* measPow.PwRrear.CurrentTibia.Data);
-%     P_rear_left = abs(measPow.PwLrear.VoltageFemur.Data'*measPow.PwLrear.CurrentFemur.Data) ... 
-%         + abs(measPow.PwLrear.VoltageTibia.Data'*measPow.PwLrear.CurrentTibia.Data);
-
-%     P_front_right = abs(measPow.PwRfront.VoltageFemur.Data.*measPow.PwRfront.CurrentFemur.Data) ...
-%         + abs(measPow.PwRfront.VoltageTibia.Data.*measPow.PwRfront.CurrentTibia.Data);
-%     P_front_left = abs(measPow.PwLfront.VoltageFemur.Data.*measPow.PwLfront.CurrentFemur.Data) ...
-%         + abs(measPow.PwLfront.VoltageTibia.Data.*measPow.PwLfront.CurrentTibia.Data);
-%     P_rear_right = abs(measPow.PwRrear.VoltageFemur.Data.*measPow.PwRrear.CurrentFemur.Data) ... 
-%         + abs(measPow.PwRrear.VoltageTibia.Data.* measPow.PwRrear.CurrentTibia.Data);
-%     P_rear_left = abs(measPow.PwLrear.VoltageFemur.Data.*measPow.PwLrear.CurrentFemur.Data) ... 
-%         + abs(measPow.PwLrear.VoltageTibia.Data.*measPow.PwLrear.CurrentTibia.Data);
-%     Energy = trapz(timeData,P_front_left) + trapz(timeData,P_front_right)...
-%         + trapz(timeData,P_rear_left) + trapz(timeData,P_rear_right); 
-%% Energy data
-%     measLegs = simout.measLegs;
-%     PRfr = abs(measLegs.Rfront.OmegaT.Data'*measLegs.Rfront.TorqueT.Data) +...
-%         abs(measLegs.Rfront.OmegaF.Data'*measLegs.Rfront.TorqueF.Data);
-%     PRr = abs(measLegs.Rrear.OmegaT.Data'*measLegs.Rrear.TorqueT.Data) +...
-%         abs(measLegs.Rrear.OmegaF.Data'*measLegs.Rrear.TorqueF.Data);
-%     PLfr = abs(measLegs.Lfront.OmegaT.Data'*measLegs.Lfront.TorqueT.Data) +...
-%         abs(measLegs.Lfront.OmegaF.Data'*measLegs.Lfront.TorqueF.Data);
-%     PLr = abs(measLegs.Lrear.OmegaT.Data'*measLegs.Lrear.TorqueT.Data) +...
-%         abs(measLegs.Lrear.OmegaF.Data'*measLegs.Lrear.TorqueF.Data);
-%     Power = [PRfr PRr PLfr PLr];
-%     Energy = sum(Power);
 
 %% OptFunction = Reward for RL from article
 %     alp_1 = 0.04;
@@ -137,13 +101,14 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %   Negative sign needed since the optimization minimizes cost function
 
 % penalty = -positiveReward/negativeReward;
- 
+
 %% Maybe
 % penalty = sqrt((vel_x - v_target)'*(vel_x - v_target)) + 3*(xEnd -
 % 10*v_x_des)^2/tEnd; %1
 
+CoT = CostOfTransport(simout,actuatorType);
 % best solution
-penalty = (xEnd - 10*v_x_des)^2/tEnd*(abs(max(yMax))+1);%*Energy; %2 find walk and trot with few error; 
+penalty = (xEnd - 10*v_x_des)^2/tEnd*(abs(max(yMax))+1)*CoT; %2 find walk and trot with few error; 
  
 % if abs(xEnd) < 0.5
 %     penalty = 1000;

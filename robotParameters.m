@@ -66,9 +66,9 @@ g_ratio = 1.5;%10.3;
 
 %% Spine parameters
 
-spine_eq_pos = 0; %[rad] equlibrium position spine
-spine_stiffness = 300; % [Hm/rad] spine joing spring stifness
-spine_damping = 10; %  [Hm/(rad/s)] spine joint damphing coefficient
+bd_spine_eq_pos = 0; %[rad] equlibrium position spine
+bd_spine_stiffness = 300; % [Hm/rad] spine joing spring stifness
+bd_spine_damping = 10; %  [Hm/(rad/s)] spine joint damphing coefficient
 % Bounds [rad]
 spine_pos_low_limit = -pi/2;
 spine_pos_up_limit = pi/2;
