@@ -82,4 +82,4 @@ staticFriction = 0.9;
 dynamicFriction = 0.8;
 mu_vth = 0.1;
 
-max_height_foot = 0.3;
+max_height_foot = 0.35;

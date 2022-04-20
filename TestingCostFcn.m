@@ -2,8 +2,8 @@
 
 % path = ['ResultOptimize18-04/' 'walk_PD_ctrl_optimizedData_19Apr22_1152'];
 
-% mdlName = 'QR_Unitree';
-% open_system(mdlName);
+mdlName = 'QR_Unitree';
+open_system(mdlName);
 % load(path)
 
 % Choose actuator type for old data 
@@ -20,10 +20,10 @@
 % tib_motionRear = tibia_motionRear;
 
 % Set desired velocity for optimization
-v_des = 0.9; % [m/s]
+v_des = 1.5; % [m/s]
 
 % Set desired mean z position
-z_des = 0.3; % [m]
+z_des = 0.4; % [m]
 % scalingFactor = 3;
 set_param(mdlName,'SimulationMode','accelerator');
 set_param(mdlName,'SimMechanicsOpenEditorOnUpdate','on');
@@ -31,7 +31,8 @@ set_param(mdlName,'SimMechanicsOpenEditorOnUpdate','on');
 last_scores(1,2) = 0;
 numPoints = 6; % Number of joint angle points
 for idx = 1:size(last_scores)
-p = last_population(idx,:);%[rad2deg(femur_motionFront(1:end-1)),...
+p = last_population(idx,:);
+%p = [rad2deg(femur_motionFront(1:end-1)),...
 %     rad2deg( tibia_motionFront(1:end-1)),...
 %     rad2deg(femur_motionRear(1:end-1)),...
 %     rad2deg(tibia_motionRear(1:end-1)),...
