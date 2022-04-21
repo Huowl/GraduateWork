@@ -55,7 +55,7 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 %     xData = timeseries2timetable(measBody.x).x;
 
 %% Aggressiveness param for more realistic movments
-n = 1;
+n = 0;
 diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
 for idx = 1:numel(diffs)-1
     if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N)     
