@@ -49,7 +49,7 @@ function penalty = CostFuncOptimizeSpine(params,mdlName,scaleFactor,gait_period,
 
 %% Define spine parameters
 
-    bd_spine_eq_pos = spine_param(1);
+    bd_spine_eq_pos = deg2rad(spine_param(1));
     bd_spine_stiffness = spine_param(2);
     bd_spine_damping = spine_param(3);
 
@@ -65,11 +65,11 @@ function penalty = CostFuncOptimizeSpine(params,mdlName,scaleFactor,gait_period,
     meanZ = mean(zData);
 
 %% Aggressiveness param for more realistic movments
-n = 0.2;
+n = 0;
 diffs = [diff(fem_motionFront) diff(tib_motionFront) diff(fem_motionRear) diff(tib_motionRear)];
 for idx = 1:numel(diffs)-1
     if (sign(diffs(idx)/diffs(idx+1))<0) && mod(idx,N)     
-           n = n + 0.8;
+           n = n + 1;
     end
 end
 
@@ -77,17 +77,17 @@ aggressiveness = 2^n;
 
 %% Penalty function
 
-CoT = CostOfTransport(simout,actuatorType);
+CoT = CostOfTransport(simout,actuatorType)^2;
 
 % Penalty velocity CoM
 penVel = (1e1*(xEnd - simTime*v_x_des))^2/(tEnd)^4;
 
 % Penalty XYZ pozition CoM
-penXYZ = abs(meanZ-mean_z_des); 
+% penXYZ = abs(meanZ-mean_z_des); 
 
-penalty = prod([penVel penXYZ aggressiveness]);
+penalty = prod([penVel aggressiveness CoT]);
 
 % For debug
-% disp(['Vel-' num2str(penVel) ' XYZ-' num2str(penXYZ) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty) 'CoT-' num2str(CoT)])
+% disp(['Vel-' num2str(penVel) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty) ' CoT-' num2str(CoT)])
 
 end

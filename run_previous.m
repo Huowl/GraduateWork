@@ -1,18 +1,21 @@
 %% Run previous
+if new_run
+    robotParameters; % Robot's and Ground's Parameters 
 
-robotParameters; % Robot's and Ground's Parameters 
-
-mdlName = 'QR_Unitree';
-open_system(mdlName);
-
+    mdlName = 'QR_Unitree';
+    open_system(mdlName);
+end
 % Body type (with spine or not)
 load(path_prev)
 
+if exist('save_bodyType','var')
+    typeBody = save_bodyType;
+end
 % Choose actuator type for old data 
-if exist('save_actType',"var") == 0
+if ~exist('save_actType',"var")
     actuatorType = 2;
 else
-    actuatorType = save_actType;
+    actuatorType = 1;%save_actType;
 end
 choice_ctrl_legs; % Set PID coefficient
 
@@ -23,9 +26,9 @@ tib_motionRear = tibia_motionRear;
 
 % Parameters spine for second type of robot (with spine)
 if save_bodyType == 2
-    bd_spine_eq_pos = spine_damphing_coeff;
-    bd_spine_stiffness = spine_position;
-    bd_spine_damping = spine_spring_stiff;
+    bd_spine_eq_pos = spine_postion;
+    bd_spine_stiffness = spine_spring_stiff;
+    bd_spine_damping = spine_damphing_coeff;
 end
 
 % Create Trajectory for Legs
@@ -47,7 +50,7 @@ if ~use_previous
     init_angs_S_rear = [q(1,2) q(2,2)]; % second turn
     
     % Simulate
-    tic;
+%     tic;
     prev_simout = sim(mdlName,'StopTime','10','SrcWorkspace','current');
-    simTime = toc;
+%     simTime = toc;
 end

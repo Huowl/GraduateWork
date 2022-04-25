@@ -46,9 +46,9 @@ offset_LR = [-leg_offset_x, leg_offset_y, body_dim(3)/2];
 
 %% Motor Parameters Unitree A1 20 march 2022
 
-PWM_freq = 4000; % [Hz]
+PWM_freq = 100; % [Hz]
 max_torque = 33.5; % [V] Scaling PWM 100
-m_voltage = 36; % [V] Output PWM
+m_voltage = 24; % [V] Output PWM
 
 arm_resistance = 4.1730; %[Ohm]
 arm_inductance = 250e-6; % [H]
@@ -57,14 +57,16 @@ torque_c = 0.8372; %[N*m/A]
 rotor_inertia = 72e-6;
 rotor_damping = 0.09;
 
-g_ratio = 1.5;%10.3;
+g_ratio = 1;%10.3;
 
+stall_torque_motor = 33.5; % [H*m]
+no_load_speed_motor = 21; % [rad/s]
 
 %% Spine parameters
 
-bd_spine_eq_pos = 0; %[rad] equlibrium position spine
-bd_spine_stiffness = 300; % [Hm/rad] spine joing spring stifness
-bd_spine_damping = 10; %  [Hm/(rad/s)] spine joint damphing coefficient
+% bd_spine_eq_pos = 0; %[rad] equlibrium position spine
+% bd_spine_stiffness = 300; % [Hm/rad] spine joing spring stifness
+% bd_spine_damping = 10; %  [Hm/(rad/s)] spine joint damphing coefficient
 % Bounds [rad]
 spine_pos_low_limit = -pi/2;
 spine_pos_up_limit = pi/2;
@@ -80,6 +82,6 @@ cntdmp = cntstiff/10; % 1e5
 
 staticFriction = 0.9;
 dynamicFriction = 0.8;
-mu_vth = 0.1;
+mu_vth = 1e-1;
 
 max_height_foot = 0.35;
