@@ -11,6 +11,10 @@ zData = timeseries2timetable(measBody.z).z;
             + PowLegs.PwRrear.EnergyFemur.Data(end) + PowLegs.PwRrear.EnergyTibia.Data(end) ...
             + PowLegs.PwLfront.EnergyFemur.Data(end) + PowLegs.PwLfront.EnergyTibia.Data(end) ...
             + PowLegs.PwLrear.EnergyFemur.Data(end) + PowLegs.PwLrear.EnergyTibia.Data(end);
+        Power = mean(PowLegs.PwRfront.PowerFemur.Data + PowLegs.PwRfront.PowerTibia.Data...
+            + PowLegs.PwRrear.PowerFemur.Data + PowLegs.PwRrear.PowerTibia.Data ...
+            + PowLegs.PwLfront.PowerFemur.Data + PowLegs.PwLfront.PowerTibia.Data ...
+            + PowLegs.PwLrear.PowerFemur.Data + PowLegs.PwLrear.PowerTibia.Data);
     elseif actuator == 1 % If Motor
 %         PowLegs = simout.measPow;
 %         P_front_right = abs(measPow.PwRfront.VoltageFemur.Data.*measPow.PwRfront.CurrentFemur.Data) ...
@@ -45,6 +49,15 @@ delta_z = zData(2:end) - zData(1:end-1);
 del_radius_vector = sqrt(delta_x.^2 + delta_y.^2 + delta_z.^2);
 distance = sum(del_radius_vector);
 
+%% Velocity
+
+vZdata = timeseries2timetable(measBody.vZ).vZ;
+vXdata = timeseries2timetable(measBody.vX).vX;
+
+V = mean(sqrt(vZdata.^2 + vXdata.^2));
+
     %% Penalty function
 CoT = Energy / W / distance;
+
+CoT_1 = Power / W / V;
 end

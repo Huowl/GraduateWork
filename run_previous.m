@@ -2,7 +2,7 @@
 if new_run
     robotParameters; % Robot's and Ground's Parameters 
 
-    mdlName = 'QR_Unitree';
+    mdlName = 'QR_Unitree';%'QR_Unitree';
     open_system(mdlName);
 end
 % Body type (with spine or not)
@@ -26,9 +26,13 @@ tib_motionRear = tibia_motionRear;
 
 % Parameters spine for second type of robot (with spine)
 if save_bodyType == 2
-    bd_spine_eq_pos = spine_postion;
+    bd_spine_eq_pos = deg2rad(spine_position);
     bd_spine_stiffness = spine_spring_stiff;
     bd_spine_damping = spine_damphing_coeff;
+else
+    bd_spine_eq_pos = 0;
+    bd_spine_stiffness = 0;
+    bd_spine_damping = 0;
 end
 
 % Create Trajectory for Legs
@@ -46,11 +50,13 @@ if ~use_previous
         fem_motionRear,tib_motionRear,gait_period,[0 delta_gait_rear*gait_period/100]);
     
     %initial position rear legs
-    init_angs_F_rear = [q(1,1) q(2,1)]; % first turn
+    init_angs_F_rear = [q(1,1) q(2,1)]; % first turndeg2rad([-140 95]);%
     init_angs_S_rear = [q(1,2) q(2,2)]; % second turn
     
     % Simulate
-%     tic;
+    tic;
+%     set_param(mdlName,'TunableVars',bd_spine_eq_pos);
+    set_param(mdlName,'SimulationCommand','update');
     prev_simout = sim(mdlName,'StopTime','10','SrcWorkspace','current');
-%     simTime = toc;
+    simTime = toc;
 end

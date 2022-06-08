@@ -30,7 +30,8 @@
 % robotParameters;
 last_scores(1,2) = 0;
 % numPoints = 6; % Number of joint angle points
-for idx = 1:size(last_scores)
+% for idx = 1:size(last_scores)
+idx = 40;
 p = last_population(idx,:);
 % p = [rad2deg(femur_motionFront(1:end-1)),...
 %     rad2deg(tibia_motionFront(1:end-1)),...
@@ -38,9 +39,9 @@ p = last_population(idx,:);
 %     rad2deg(tibia_motionRear(1:end-1)),...
 %     delta_gait_front, delta_gait_rear, spine_position, spine_spring_stiff, spine_damphing_coeff]/scalingFactor;
 disp(['indiv: ' num2str(idx)]);
-% costFcn = simulateQuadrupedRobot(p,mdlName,scalingFactor,gait_period,v_des,actuatorType,z_des);
-costFcn = CostFuncOptimizeSpine(p,mdlName,scalingFactor,gait_period, v_des, actuatorType, 0);
+costFcn = simulateQuadrupedRobot(p,mdlName,scalingFactor,gait_period,v_des,actuatorType,z_des);
+% costFcn = CostFuncOptimizeSpine(p,mdlName,scalingFactor,gait_period, v_des, actuatorType, 0);
 last_scores(idx,2) = costFcn;
-end
+% end
 % disp(costFcn);
 % set_param(mdlName,'FastRestart','off'); % Off Fast Restart

@@ -41,7 +41,6 @@ function penalty = CostFuncOptimizeSpine(params,mdlName,scaleFactor,gait_period,
     % Package up the initial conditions, keeping the yaw/roll joints fixed
     init_angs_F_rear = [q(1,1) q(2,1)]; % first turn
     init_angs_S_rear = [q(1,2) q(2,2)]; % second turn
-
 %% Define delay gait period for couple legs
 
     delta_gait_front = delays(1);
@@ -55,7 +54,7 @@ function penalty = CostFuncOptimizeSpine(params,mdlName,scaleFactor,gait_period,
 
 %% Simulate the model
 
-    simout = sim(mdlName,'StopTime',num2str(simTime),'SrcWorkspace','current','FastRestart','on');          
+    simout = sim(mdlName,'StopTime',num2str(simTime),'SrcWorkspace','current','FastRestart','off');          
 
 %% Unpack logged data
     measBody = simout.measBody;
@@ -63,6 +62,7 @@ function penalty = CostFuncOptimizeSpine(params,mdlName,scaleFactor,gait_period,
     tEnd = simout.tout(end);
     zData = timeseries2timetable(measBody.z).z;
     meanZ = mean(zData);
+    vel_x = timeseries2timetable(measBody.vX).vX;
 
 %% Aggressiveness param for more realistic movments
 n = 0;
@@ -77,17 +77,17 @@ aggressiveness = 2^n;
 
 %% Penalty function
 
-CoT = CostOfTransport(simout,actuatorType)^2;
+CoT = (5e1*CostOfTransport(simout,actuatorType))^2;
 
 % Penalty velocity CoM
-penVel = (1e1*(xEnd - simTime*v_x_des))^2/(tEnd)^4;
+penVel = (1e2*(xEnd - simTime*v_x_des))^2/(tEnd)^4;
 
 % Penalty XYZ pozition CoM
 % penXYZ = abs(meanZ-mean_z_des); 
 
-penalty = prod([penVel aggressiveness CoT]);
+penalty = prod([max(penVel,5e-3) CoT]);
 
 % For debug
-% disp(['Vel-' num2str(penVel) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty) ' CoT-' num2str(CoT)])
+% disp([num2str(mean(vel_x)) ' pVel-' num2str(penVel) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty) ' CoT-' num2str(sqrt(CoT)/50)])
 
 end

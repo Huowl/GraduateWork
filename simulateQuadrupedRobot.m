@@ -9,6 +9,10 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
     % Load parameters into function workspace
     robotParameters;
     
+    bd_spine_eq_pos = 0;
+    bd_spine_stiffness = 0;
+    bd_spine_damping = 0;
+
     % Apply variable scaling
     params = scaleFactor*params;
     
@@ -28,7 +32,7 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
     [q,fem_der_front,tib_der_front] = createSmoothTrajectory( ... 
         fem_motionFront,tib_motionFront,gait_period,[0 delays(1)*gait_period/100]);
     % Package up the initial conditions, keeping the yaw/roll joints fixed
-    init_angs_F_front = [q(1,1) q(2,1)]; % first turn
+    init_angs_F_front = [q(1,1) q(2,1)]; % first turn deg2rad([-140 95]);%
     init_angs_S_front = [q(1,2) q(2,2)]; % second turn
 
     [q,fem_der_rear,tib_der_rear] = createSmoothTrajectory(... 
@@ -42,17 +46,17 @@ function penalty = simulateQuadrupedRobot(params,mdlName,scaleFactor,gait_period
 
 %% Simulate the model
 
-    simout = sim(mdlName,'StopTime',num2str(simTime),'SrcWorkspace','current','FastRestart','on');          
+    simout = sim(mdlName,'StopTime',num2str(simTime),'SrcWorkspace','current','FastRestart','off');          
 
 %% Unpack logged data
     measBody = simout.measBody;
     xEnd = timeseries2timetable(measBody.x).x(end);
     tEnd = simout.tout(end);
     zData = timeseries2timetable(measBody.z).z;
-
+% 
      vel_x = timeseries2timetable(measBody.vX).vX;
-%      v_target = repmat(v_x_des,[numel(vel_x) 1]);
-
+% %      v_target = repmat(v_x_des,[numel(vel_x) 1]);
+% 
     yData = timeseries2timetable(measBody.y).y;
     xData = timeseries2timetable(measBody.x).x;
 
@@ -84,19 +88,19 @@ route = sqrt(s_x^2+s_y^2+s_z^2);
 
 %% fitness function
 
-CoT = CostOfTransport(simout,actuatorType);
+CoT = (5e1*CostOfTransport(simout,actuatorType))^2;
 
 % Penalty velocity CoM
 % penVel = (10*(vel_x - v_target))'*(10*(vel_x - v_target))/(tEnd)^4;
-penVel = (1e1*(xEnd - simTime*v_x_des))^2/(tEnd)^4;
+penVel = (1e2*(xEnd - simTime*v_x_des))^2/(tEnd)^4;
 
 % Penalty XYZ pozition CoM
 % penXYZ = abs(meanZ-mean_z_des);
-penXYZ = distance/route; 
+% penXYZ = distance/route; 
 
-penalty = prod([penVel penXYZ aggressiveness]);
+penalty = prod([max(penVel,5e-3) CoT]);
 
 % For debug
-disp([num2str(mean(vel_x)) ' Vel-' num2str(penVel)  ' XYZ-' num2str(penXYZ)  ' CoT-' num2str(CoT) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty)])
+% disp([num2str(mean(vel_x)) ' Vel-' num2str(penVel)  ' CoT-' num2str(sqrt(CoT)/50) ' agr-' num2str(aggressiveness) ' pen-' num2str(penalty)])
 end
 

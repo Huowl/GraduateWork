@@ -1,7 +1,8 @@
 robotParameters;
 kv = 0.0131;
 M = rotor_inertia + femur_mass * femur_length^2 / 2;
-
+actuatorType = 1;
+choice_ctrl_legs;
 % A = zeros(2,2);
 % 
 % 

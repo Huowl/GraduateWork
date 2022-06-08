@@ -1,9 +1,9 @@
 if actuatorType == 1
-    k_p_fem = 90; % 185.2563;
-    k_d_fem =  1; % 0.0977
+    k_p_fem = 90;%264;  %69; % 185.2563;
+    k_d_fem = 1;%0.6; % 0.6; % 0.0977
     k_i_fem = 0;
-    k_p_tib =  90;
-    k_d_tib =  1;
+    k_p_tib = 90;%240; % 255;
+    k_d_tib = 1;%3.9; % 3.9;
     k_i_tib = 0;
     ctrl_name = "Motor";
 elseif actuatorType == 2

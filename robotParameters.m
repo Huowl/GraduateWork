@@ -1,7 +1,7 @@
 %% robotParameters
 
 ground = [20 1.5 0.05]; % [m]
-z_offset = 0.4; % [m]
+z_offset = 0.35; % [m]
 
 % Trajectory sample time
 tsTraj = 0.01;          
@@ -57,7 +57,7 @@ torque_c = 0.8372; %[N*m/A]
 rotor_inertia = 72e-6;
 rotor_damping = 0.09;
 
-g_ratio = 1;%10.3;
+g_ratio = 3;%10.3;
 
 stall_torque_motor = 33.5; % [H*m]
 no_load_speed_motor = 21; % [rad/s]
@@ -84,4 +84,4 @@ staticFriction = 0.9;
 dynamicFriction = 0.8;
 mu_vth = 1e-1;
 
-max_height_foot = 0.35;
+max_height_foot = 0.27;

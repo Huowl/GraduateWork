@@ -13,12 +13,14 @@ if parallelFlag
     p = gcp;
     
     % Prevent parallel simulations from accessing Simulation Data Inspector
-    Simulink.sdi.enablePCTSupport('all');
+    Simulink.sdi.enablePCTSupport('local');
     
     % Add paths and dependent files to run simulations in parallel
     rootDir = fullfile(fileparts(mfilename('fullpath')),'');
-    addAttachedFiles(p,rootDir);
-    parfevalOnAll(@addpath,0,rootDir);
+    addAttachedFiles(p,fullfile(rootDir,{'','ResultOptimize18-04','ResultOptimRigid27_04','SpineOptimize26-04'}));
+    parfevalOnAll(@addpath,0,rootDir,fullfile(rootDir,'ResultOptimize18-04'), ... 
+                             genpath(fullfile(rootDir,'ResultOptimRigid27_04')), ... 
+                             genpath(fullfile(rootDir,'SpineOptimize26-04')));
     parfevalOnAll(@load_system,0,mdlName);
     
     % If the acceleration flag is true, set the simulation mode to
